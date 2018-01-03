@@ -1,0 +1,46 @@
+{
+    "viewFullProfile": [
+        {
+            "roles": [
+                "member"
+            ],
+            "rules": [
+                "ShouldOwn"
+            ]
+        },
+        {
+            "roles": [
+                "sysadmin"
+            ],
+            "rules": []
+        },
+        {
+            "roles": [
+                "temporaryAccess"
+            ],
+            "rules": [
+                "ShouldOwn"
+            ]
+        }
+    ],
+    "createProfile": [
+        {
+            "roles": [
+                "temporaryAccess"
+            ],
+            "rules": [
+                "ShouldOwn"
+            ]
+        }
+    ],
+    "updateProfile": [
+        {
+            "roles": [
+                "member"
+            ],
+            "rules": [
+                "ShouldOwn"
+            ]
+        }
+    ]
+}

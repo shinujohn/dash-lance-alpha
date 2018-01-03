@@ -1,0 +1,16 @@
+{
+    "config": {
+        "ENV_NAME": "local",
+        "jwtSecret": "secret",
+        "database": {
+            "type": "Mongo",
+            "url": "mongodb://localhost:27017/dashlance"
+        },
+        "logger": {
+            "type": "Console"
+        },
+        "storage": {
+            "type": "Local"
+        }
+    }
+}
