@@ -12,6 +12,8 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var Connection_1 = require("./../../services/Connection");
 var ApiSetup_1 = require("./../ApiSetup");
+var Connection_2 = require("./../../models/member/Connection");
+var Serializer_1 = require("serializer.ts/Serializer");
 var ConnectionApiSetup = /** @class */ (function (_super) {
     __extends(ConnectionApiSetup, _super);
     function ConnectionApiSetup() {
@@ -23,9 +25,23 @@ var ConnectionApiSetup = /** @class */ (function (_super) {
         router.get(this.GetContextRoot() + "/members/:memberId/connections", function (req, res) {
             var locator = global.locator;
             var clientContext = req.clientContext;
+            var depth = req.query.depth ? parseInt(req.query.depth) : null;
+            var memberId = req.params.memberId;
             var connectionService = new Connection_1.ConnectionService(locator, clientContext);
-            connectionService.getConnections(req.params.memberId).then(function (connections) {
+            connectionService.getConnections(memberId, depth).then(function (connections) {
                 res.send(connections);
+            }).catch(function (err) {
+                res.sendStatus(_this.getErrorCode(err));
+            });
+        });
+        router.put(this.GetContextRoot() + "/members/:memberId/connections", function (req, res) {
+            var locator = global.locator;
+            var clientContext = req.clientContext;
+            var memberId = req.params.memberId;
+            var connection = Serializer_1.deserialize(Connection_2.Connection, req.body);
+            var connectionService = new Connection_1.ConnectionService(locator, clientContext);
+            connectionService.createConnection(memberId, connection).then(function (result) {
+                res.send(result);
             }).catch(function (err) {
                 res.sendStatus(_this.getErrorCode(err));
             });

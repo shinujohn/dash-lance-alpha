@@ -4,5 +4,7 @@
 export enum Action {
 
     viewFullProfile = "viewFullProfile",
-    updateProfile = "updateProfile"
+    updateProfile = "updateProfile",
+    getConnections = "getConnections",
+    createConnection = "createConnection"
 } 

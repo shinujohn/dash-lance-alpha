@@ -57,12 +57,12 @@ class Mongo extends Database {
     /**
      * Updates the given data in all documents returned by the query
      */
-    update(type: string, query: Object, dataToUpdate: any) {
+    update(type: string, query: Object, dataToUpdate: any, options?: Object) {
 
         return new Promise((resolve, reject) => {
             var collection = this.getCollection(type);
 
-            collection.update(query, dataToUpdate, (err, result: any) => {
+            collection.update(query, dataToUpdate, options, (err, result: any) => {
 
                 if (err) {
                     console.error(err);

@@ -15,11 +15,10 @@ var Connection = /** @class */ (function (_super) {
     __extends(Connection, _super);
     function Connection() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.from = null;
-        _this.to = null;
+        _this.memberId = null;
         _this.type = null;
         _this.category = null;
-        _this.isApproved = false;
+        _this.status = null;
         return _this;
     }
     return Connection;

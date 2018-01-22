@@ -35,8 +35,8 @@ export class MemberApiSetup extends ApiSetup {
 
             // Get a member by additional parameters
             // Only two parameters supported now - email or phonenumber
-            let email = req.query.parameters.email;
-            let mobileNumber = req.query.parameters.mobileNumber;
+            let email = req.query.email;
+            let mobileNumber = req.query.mobileNumber;
 
             let memberService: MemberService = new MemberService(locator, clientContext);
             let promise = null;

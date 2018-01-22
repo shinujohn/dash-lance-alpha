@@ -3,6 +3,7 @@ import * as  shortId from "shortid";
 import * as _ from "lodash";
 import { Member } from "./../models/member/Member";
 import { Connection } from "./../models/member/Connection";
+import { Status } from "./../enums/common/Status";
 import { ClientContext } from "./../models/common/ClientContext";
 import { Locator } from "./../models/common/Locator";
 import { PrincipalType } from "./../enums/common/PrincipalType";
@@ -26,11 +27,77 @@ export class ConnectionService {
         this.clientContext = clientContext;
     }
 
+    createConnection(memberId: string, connection: Connection) {
+        return new Promise<Boolean>((resolve, reject) => {
+
+            if (!memberId) {
+                reject(new Error(ErrorType.invalidParameter));
+                return;
+            }
+
+            if (memberId && !this.getRuleEngine(memberId).execute(Resource.member, Action.createConnection)) {
+                reject(new Error(ErrorType.unauthorised));
+                return;
+            }
+
+            if (!connection.memberId
+                || !connection.type
+                || !connection.category) {
+
+                reject(new Error(ErrorType.invalidData));
+                return;
+            }
+
+            connection.audit = {
+                timeStamp: new Date(),
+                updatedBy: null
+            };
+
+            connection.status = Status.pendingApproval;
+
+            if (this.clientContext.id) {
+                connection.audit.updatedBy = {
+                    id: this.clientContext.id,
+                    type: this.clientContext.type
+                }
+            }
+
+            this.locator.database.find("Connections", {
+                memberId: memberId,
+                connections: {
+                    memberId: connection.memberId,
+                    type: connection.type,
+                    category: connection.category
+                }
+            }, null).then((connections: any[]) => {
+
+                if (connections && connections.length) {
+                    reject(new Error(ErrorType.duplicate));
+                    return;
+                } else {
+
+                    // create connection
+                    this.locator.database.update("Connections", { memberId: memberId }, { $push: { connections: connection } }, { upsert: true }).then(() => {
+                        resolve(true);
+                    }).catch((error: Error) => {
+                        reject(error);
+                    });
+                }
+            });
+
+        });
+    }
+
     /**
      * Gets the connections for given member
      */
     getConnections(memberId: string, depth?: number): Promise<Connection> {
         return new Promise<Connection>((resolve, reject) => {
+
+            if (!this.getRuleEngine(memberId).execute(Resource.member, Action.getConnections)) {
+                reject(new Error(ErrorType.unauthorised));
+                return;
+            }
 
             depth = depth || 3;
 
@@ -44,7 +111,7 @@ export class ConnectionService {
                         connectFromField: "connections.memberId",
                         connectToField: "memberId",
                         as: "relations",
-                        maxDepth: 3,
+                        maxDepth: depth,
                         depthField: "depth"
                     }
                 }
@@ -127,5 +194,17 @@ export class ConnectionService {
             // End of tree
             person.connections = undefined;
         }
+    }
+
+    private getRuleEngine(memberId: string) {
+        return new RuleEngine({
+            clientContext: this.clientContext,
+            entityContext: {
+                id: memberId,
+                owner: {
+                    id: memberId
+                }
+            }
+        });
     }
 }

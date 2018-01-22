@@ -42,5 +42,22 @@
                 "ShouldOwn"
             ]
         }
+    ],
+    "getConnections": [
+        {
+            "roles": [
+                "member"
+            ]
+        }
+    ],
+    "createConnection": [
+        {
+            "roles": [
+                "member"
+            ],
+            "rules": [
+                "ShouldOwn"
+            ]
+        }
     ]
 }

@@ -4,8 +4,8 @@ import * as nconf from "nconf";
 import { Promise } from "rsvp";
 
 export abstract class Database {
- 
-    constructor() {  
+
+    constructor() {
     }
 
     /**
@@ -16,7 +16,7 @@ export abstract class Database {
     /**
      * Updates the given data in all documents returned by the query
      */
-    abstract update(type: string, query: Object, dataToUpdate: any): any;
+    abstract update(type: string, query: Object, dataToUpdate: any, options?: Object): any;
 
     /**
      * Finds a single document from the collection

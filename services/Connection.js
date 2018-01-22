@@ -1,7 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var rsvp_1 = require("rsvp");
+var Status_1 = require("./../enums/common/Status");
 var errorType_1 = require("./../enums/common/errorType");
+var RuleEngine_1 = require("../utils/authorisation/RuleEngine");
+var Resource_1 = require("../utils/authorisation/enums/Resource");
+var Action_1 = require("../utils/authorisation/enums/Action");
 var ConnectionService = /** @class */ (function () {
     /**
      *
@@ -14,12 +18,67 @@ var ConnectionService = /** @class */ (function () {
         this.locator = locator;
         this.clientContext = clientContext;
     }
+    ConnectionService.prototype.createConnection = function (memberId, connection) {
+        var _this = this;
+        return new rsvp_1.Promise(function (resolve, reject) {
+            if (!memberId) {
+                reject(new Error(errorType_1.ErrorType.invalidParameter));
+                return;
+            }
+            if (memberId && !_this.getRuleEngine(memberId).execute(Resource_1.Resource.member, Action_1.Action.createConnection)) {
+                reject(new Error(errorType_1.ErrorType.unauthorised));
+                return;
+            }
+            if (!connection.memberId
+                || !connection.type
+                || !connection.category) {
+                reject(new Error(errorType_1.ErrorType.invalidData));
+                return;
+            }
+            connection.audit = {
+                timeStamp: new Date(),
+                updatedBy: null
+            };
+            connection.status = Status_1.Status.pendingApproval;
+            if (_this.clientContext.id) {
+                connection.audit.updatedBy = {
+                    id: _this.clientContext.id,
+                    type: _this.clientContext.type
+                };
+            }
+            _this.locator.database.find("Connections", {
+                memberId: memberId,
+                connections: {
+                    memberId: connection.memberId,
+                    type: connection.type,
+                    category: connection.category
+                }
+            }, null).then(function (connections) {
+                if (connections && connections.length) {
+                    reject(new Error(errorType_1.ErrorType.duplicate));
+                    return;
+                }
+                else {
+                    // create connection
+                    _this.locator.database.update("Connections", { memberId: memberId }, { $push: { connections: connection } }, { upsert: true }).then(function () {
+                        resolve(true);
+                    }).catch(function (error) {
+                        reject(error);
+                    });
+                }
+            });
+        });
+    };
     /**
      * Gets the connections for given member
      */
     ConnectionService.prototype.getConnections = function (memberId, depth) {
         var _this = this;
         return new rsvp_1.Promise(function (resolve, reject) {
+            if (!_this.getRuleEngine(memberId).execute(Resource_1.Resource.member, Action_1.Action.getConnections)) {
+                reject(new Error(errorType_1.ErrorType.unauthorised));
+                return;
+            }
             depth = depth || 3;
             var query = [
                 { $match: { "memberId": memberId } },
@@ -30,7 +89,7 @@ var ConnectionService = /** @class */ (function () {
                         connectFromField: "connections.memberId",
                         connectToField: "memberId",
                         as: "relations",
-                        maxDepth: 3,
+                        maxDepth: depth,
                         depthField: "depth"
                     }
                 }
@@ -97,6 +156,17 @@ var ConnectionService = /** @class */ (function () {
             // End of tree
             person.connections = undefined;
         }
+    };
+    ConnectionService.prototype.getRuleEngine = function (memberId) {
+        return new RuleEngine_1.RuleEngine({
+            clientContext: this.clientContext,
+            entityContext: {
+                id: memberId,
+                owner: {
+                    id: memberId
+                }
+            }
+        });
     };
     return ConnectionService;
 }());

@@ -37,8 +37,8 @@ var MemberApiSetup = /** @class */ (function (_super) {
             var clientContext = req.clientContext;
             // Get a member by additional parameters
             // Only two parameters supported now - email or phonenumber
-            var email = req.query.parameters.email;
-            var mobileNumber = req.query.parameters.mobileNumber;
+            var email = req.query.email;
+            var mobileNumber = req.query.mobileNumber;
             var memberService = new Member_1.MemberService(locator, clientContext);
             var promise = null;
             if (mobileNumber) {

@@ -62,11 +62,11 @@ var Mongo = /** @class */ (function (_super) {
     /**
      * Updates the given data in all documents returned by the query
      */
-    Mongo.prototype.update = function (type, query, dataToUpdate) {
+    Mongo.prototype.update = function (type, query, dataToUpdate, options) {
         var _this = this;
         return new rsvp_1.Promise(function (resolve, reject) {
             var collection = _this.getCollection(type);
-            collection.update(query, dataToUpdate, function (err, result) {
+            collection.update(query, dataToUpdate, options, function (err, result) {
                 if (err) {
                     console.error(err);
                     reject(err);
